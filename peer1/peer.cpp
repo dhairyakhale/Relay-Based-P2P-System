@@ -47,7 +47,49 @@ int main(int argc, char const *argv[])
 	write(peer_sockfd, &request, sizeof(request));
 	cout<<"Sent request to server.\n";
 
-	close(peer_sockfd);
+	//close(peer_sockfd);
+
+	//Peer acts as server
+
+	if(listen(peer_sockfd, 5) < 0){
+		cout << "Error!\n";
+		exit(0);
+	}
+	else{
+		cout << "Peer is listening on port " << peer_port << "\n";
+	}
+
+	listen:
+	int client_sockfd = 0, connection_cnt = 0;
+	struct sockaddr_in client_addr;
+	socklen_t client_addr_size = sizeof(client_addr);
+	
+	if((client_sockfd = accept(peer_sockfd, (struct sockaddr*) &client_addr, &client_addr_size)) < 0){
+		cout << "Accept failed!\n";
+		exit(0);
+	}
+	else{
+		connection_cnt ++;
+		cout << "Connection " << connection_cnt << " accepted from client.\n";
+	}
+
+	request[256]={'\0'};
+	int response_code = 0;
+	read(peer_sockfd, &request, sizeof(request));
+
+	ifstream in;
+
+	in.open(string(request));
+
+	if(in) {
+		response_code=1;
+		cout<<"File exists, copying file to client...";
+		write(peer_sockfd, &response_code, sizeof(int));
+	}
+	else {
+		cout<<"File does not exist";
+		write(peer_sockfd, &response_code, sizeof(int));
+	}
 
 	return 0;
 }

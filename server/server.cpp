@@ -66,9 +66,9 @@ void relay2peer(int sockfd, struct sockaddr_in *peer_addr){
 		exit(0);
 	}
 
-
-
 	cout << "Peer socket " << ip << ":" << port << " registered in relay server.\n";
+
+	close(sockfd);
 }
 
 void decide(int sockfd, struct sockaddr_in *client_addr){
