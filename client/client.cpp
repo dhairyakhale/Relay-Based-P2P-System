@@ -36,28 +36,31 @@ int main(int argc, char *argv[]){
 	
 	read(sockfd, &line_cnt, sizeof(int));
 
-	int lc = line_cnt;
+	//int lc = line_cnt;
 
-	while(lc --){
+	while(line_cnt --){
 		read(sockfd, buffer, sizeof(buffer));
 		out << buffer << "\n";
 	}
 
 	out.close();
 
-	cout << "File received!\n";
+	cout << "Peer data received!\n";
 
 	close(sockfd);
 	
 	ifstream in("test_recv.txt", ifstream::in);
 
-	cout<<"DEMO";
-
 	string peer_ip,peer_port;
+
+	request[256]={'\0'};
+
+	cout<<"Enter filename to find (including .txt): ";
+	cin>>request;
 
 	while(in>>peer_ip>>peer_port) {
 
-		cout<<"|"<<peer_ip<<"|"<<peer_port<<"|";
+		cout<<"|"<<peer_ip<<"|"<<peer_port<<"|"<<endl;
 
 		if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
 			cout << "Error!\n";
@@ -75,11 +78,6 @@ int main(int argc, char *argv[]){
 			exit(0);
 		}
 
-		request[256]={'\0'};
-
-		cout<<"Enter filename to find (including .txt): ";
-		cin>>request;
-
 		write(sockfd, &request, sizeof(request));
 
 		int response_code;
@@ -88,7 +86,23 @@ int main(int argc, char *argv[]){
 		if(response_code) {
 			cout<<"File found at socket "<<peer_ip<<":"<<peer_port<<endl;
 
-			return 0;
+			int filebuffer = {'\0'};
+			ofstream out("copied_file.txt", ofstream::out);
+			// out << fflush;
+
+			int lc;
+			
+			read(sockfd, &lc, sizeof(int));
+
+			while(lc --){
+				read(sockfd, buffer, sizeof(buffer));
+				out << buffer << "\n";
+			}
+
+			out.close();
+
+			cout << "File received from the peer!\n";
+			break;
 		}
 		else 
 			cout<<"File not found at socket "<<peer_ip<<":"<<peer_port<<endl;

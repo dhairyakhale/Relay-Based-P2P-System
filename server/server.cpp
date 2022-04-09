@@ -39,7 +39,7 @@ void relay2client(int sockfd, struct sockaddr_in *client_addr){
 
 	in.close();
 
-	cout << "File transmitted!\n";
+	cout << "Peer data transmitted!\n";
 	close(sockfd);	
 }
 
@@ -113,13 +113,13 @@ int main(int argc, char *argv[]){
 	server_addr.sin_port = htons(server_port);
 
 	if(bind(sockfd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0){
-		cout << "Error!\n";
+		cout << "Binding Error!\n";
 		exit(0);
 	}
 	
 	// Listen for incoming messages
 	if(listen(sockfd, 5) < 0){
-		cout << "Error!\n";
+		cout << "Listening Error!\n";
 		exit(0);
 	}
 	else{
@@ -148,7 +148,6 @@ int main(int argc, char *argv[]){
 		decide(client_sockfd, &client_addr);
 	else
 		goto listen;
-
 
 	// Free socket
 	close(sockfd);

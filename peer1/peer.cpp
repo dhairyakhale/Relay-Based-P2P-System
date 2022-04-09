@@ -9,7 +9,6 @@ using namespace std;
 
 void clientcall(int peer_sockfd)
 {
-	cout<<"hello cc";
 	char request[256]={'\0'};
 	int response_code = 0;
 	read(peer_sockfd, &request, sizeof(request));
@@ -20,11 +19,27 @@ void clientcall(int peer_sockfd)
 
 	if(in) {
 		response_code=1;
-		cout<<"File exists, copying file to client...";
+		cout<<"File exists, copying file to client...\n";
 		write(peer_sockfd, &response_code, sizeof(int));
+
+		char buffer[256];
+
+		int line_cnt = 0;
+		while(in.getline(buffer, 256, '\n'))
+			line_cnt ++;
+
+		write(peer_sockfd, &line_cnt, sizeof(int));
+		in.clear();
+		in.seekg(0);
+
+		while(in.getline(buffer, 256, '\n')){
+			write(peer_sockfd, &buffer, sizeof(buffer));
+		}
+
+		in.close();
 	}
 	else {
-		cout<<"File does not exist";
+		cout<<"File does not exist\n";
 		write(peer_sockfd, &response_code, sizeof(int));
 	}
 }
@@ -68,7 +83,7 @@ int main(int argc, char const *argv[])
 
 
 	if(shutdown(peer_sockfd,0)<0) {
-		cout<<"Cannot shut down";
+		cout<<"Cannot shut down\n";
 		exit(0);
 	}
 
@@ -123,5 +138,6 @@ int main(int argc, char const *argv[])
 	else
 		goto listen;
 
+	close(peer_sockfd);
 	return 0;
 }
