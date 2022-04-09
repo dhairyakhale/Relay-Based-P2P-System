@@ -54,19 +54,25 @@ void relay2peer(int sockfd, struct sockaddr_in *peer_addr){
 	inet_ntop(AF_INET, &(peer_addr->sin_addr), ip, sizeof(ip));
 	port = htons(peer_addr->sin_port);
 
+	char peer_ip[INET_ADDRSTRLEN] = {'\0'};
+	int peer_port = 0;
+
+	read(sockfd, &peer_ip, sizeof(peer_ip));
+	read(sockfd, &peer_port, sizeof(peer_port));
+
 	// Writing the same
-	out << ip << " " << port << "\n";
+	out << peer_ip << " " << peer_port << "\n";
 	out.close();
 
-	// Sending the response to the peer that connection is successfull and the IP and PORT is saved
-	string response = "response:server\nstatus:connected\nport:" + to_string(port);
-	int bytes_send = 0;
-	if((bytes_send = send(sockfd, response.c_str(), response.length()*sizeof(char), 0)) < 0){
-		cout << "Error in sending response to peer!\n";
-		exit(0);
-	}
+	// // Sending the response to the peer that connection is successfull and the IP and PORT is saved
+	// string response = "response:server\nstatus:connected\nport:" + to_string(port);
+	// int bytes_send = 0;
+	// if((bytes_send = send(sockfd, response.c_str(), response.length()*sizeof(char), 0)) < 0){
+	// 	cout << "Error in sending response to peer!\n";
+	// 	exit(0);
+	// }
 
-	cout << "Peer socket " << ip << ":" << port << " registered in relay server.\n";
+	cout << "Peer socket " << peer_ip << ":" << peer_port << " registered in relay server.\n";
 
 	close(sockfd);
 }

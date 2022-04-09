@@ -7,6 +7,27 @@
 
 using namespace std;
 
+void clientcall(int peer_sockfd)
+{
+	char request[256]={'\0'};
+	int response_code = 0;
+	read(peer_sockfd, &request, sizeof(request));
+
+	ifstream in;
+
+	in.open(string(request));
+
+	if(in) {
+		response_code=1;
+		cout<<"File exists, copying file to client...";
+		write(peer_sockfd, &response_code, sizeof(int));
+	}
+	else {
+		cout<<"File does not exist";
+		write(peer_sockfd, &response_code, sizeof(int));
+	}
+}
+
 int main(int argc, char const *argv[])
 {
 	int peer_sockfd = 0;
@@ -47,12 +68,26 @@ int main(int argc, char const *argv[])
 	write(peer_sockfd, &request, sizeof(request));
 	cout<<"Sent request to server.\n";
 
-	//close(peer_sockfd);
+	if(shutdown(peer_sockfd,0)<0) {
+		cout<<"Cannot shut down";
+		exit(0);
+	}
 
 	//Peer acts as server
 
+	peer_sockfd = 0;
+	if((peer_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+		cout << "Socket Error!\n";
+		exit(0);
+	}
+
+	// if(bind(peer_sockfd, (struct sockaddr*) &peer_addr, sizeof(peer_addr)) < 0){
+	// 	cout << "Error!\n";
+	// 	exit(0);
+	// }
+
 	if(listen(peer_sockfd, 5) < 0){
-		cout << "Error!\n";
+		cout << "Listening Error!\n";
 		exit(0);
 	}
 	else{
@@ -73,23 +108,13 @@ int main(int argc, char const *argv[])
 		cout << "Connection " << connection_cnt << " accepted from client.\n";
 	}
 
-	request[256]={'\0'};
-	int response_code = 0;
-	read(peer_sockfd, &request, sizeof(request));
-
-	ifstream in;
-
-	in.open(string(request));
-
-	if(in) {
-		response_code=1;
-		cout<<"File exists, copying file to client...";
-		write(peer_sockfd, &response_code, sizeof(int));
-	}
-	else {
-		cout<<"File does not exist";
-		write(peer_sockfd, &response_code, sizeof(int));
-	}
+	// Function thread that takes care of further incoming connections
+	int pid = fork();
+	if(pid == 0)
+		// Decide which operation to do based on the type of request incoming from the clients
+		clientcall(peer_sockfd);
+	else
+		goto listen;
 
 	return 0;
 }

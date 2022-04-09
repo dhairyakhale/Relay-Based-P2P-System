@@ -43,12 +43,26 @@ int main(int argc, char *argv[]){
 		out << buffer << "\n";
 	}
 
+	out.close();
+
 	cout << "File received!\n";
+
+	close(sockfd);
 	
 	ifstream in("test_recv.txt", ifstream::in);
 
+	cout<<"DEMO";
+
 	string peer_ip,peer_port;
+
 	while(in>>peer_ip>>peer_port) {
+
+		cout<<"|"<<peer_ip<<"|"<<peer_port<<"|";
+
+		if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+			cout << "Error!\n";
+			exit(0);
+		}
 
 		struct sockaddr_in peer_addr;
 		peer_addr.sin_family = AF_INET;
@@ -56,6 +70,8 @@ int main(int argc, char *argv[]){
 		peer_addr.sin_port = htons(stoi(peer_port));
 
 		if(connect(sockfd, (struct sockaddr*) &peer_addr, sizeof(peer_addr)) < 0){
+
+			cout<<"Error connecting to peer "<<peer_ip<<":"<<peer_port;
 			exit(0);
 		}
 
@@ -72,12 +88,15 @@ int main(int argc, char *argv[]){
 		if(response_code) {
 			cout<<"File found at socket "<<peer_ip<<":"<<peer_port<<endl;
 
-			break;
+			return 0;
 		}
 		else 
 			cout<<"File not found at socket "<<peer_ip<<":"<<peer_port<<endl;
+
+		close(sockfd);
 	}
 
-	close(sockfd);
+	close (sockfd);
+
 	return 0;
 }
